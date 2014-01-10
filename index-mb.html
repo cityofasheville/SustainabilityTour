@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>Cycling Through Markers</title>
+  
+  <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+  <script src='http://api.tiles.mapbox.com/mapbox.js/v1.6.0/mapbox.js'></script>
+  <link href='http://api.tiles.mapbox.com/mapbox.js/v1.6.0/mapbox.css' rel='stylesheet' />
+  
+  <style>
+    body { margin:0; padding:0; }
+    #map { position:absolute; top:0; bottom:0; width:100%; }
+  </style>
+</head>
+<body>
+        <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
+        <link href="http://code.jquery.com/ui/1.9.0/themes/cupertino/jquery-ui.css" rel="stylesheet" />
+        <script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
+        <script></script>
+        <script src="http://jquery-csv.googlecode.com/git/src/jquery.csv.js"></script>
+
+<div id='map'></div>
+
+
+<script>
+
+  var map = L.mapbox.map('map', 'examples.map-9ijuk24y').setView([35.593,-82.5488], 11);
+  var markerLayer = [];
+
+  jQuery.get('data/locations.csv', function(data) {
+     var loc = $.csv.toObjects(data); 
+     var featureCollection = new FeatureCollection();
+     
+     $.each(loc, function(i, loc) {
+          
+          var feature = new Feature();
+          feature.geometry = { type:'Point',coordinates: [loc.longitude,loc.latitude] };
+          feature.properties =  {
+            title: loc.Name,
+            description: loc.Description,
+            icon: loc.Icon_color,
+            url: loc.URL,
+            thumb_url: loc.Thumb_URL,
+          }
+          featureCollection.features.push(feature);
+          
+     });
+    
+    var markerLayer = L.mapbox.markerLayer(featureCollection).addTo(map);
+    //alert(markerLayer);
+    
+    var story = [];
+    markerLayer.eachLayer(function(layer) {
+       
+        story.push(layer);
+    });
+    cycle(story);
+
+  },"text");
+
+
+  function cycle(markers) {
+      var i = 0;
+      function run() {
+          if (++i > markers.length - 1) i = 0;
+          map.setView(markers[i].getLatLng(), 12);
+          markers[i].openPopup();
+          window.setTimeout(run, 3000);
+      }
+      run();
+  }
+
+  function FeatureCollection(){  
+       this.type = 'FeatureCollection'
+      this.features = new Array();
+  }
+
+  function Feature(){
+      this.type = 'Feature';
+      this.geometry = new Object;
+      this.properties = new Object;
+  } 
+
+</script>
+
+</body>
+</html>
